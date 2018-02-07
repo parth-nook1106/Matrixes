@@ -1,0 +1,49 @@
+#include "stdafx.h"
+#include "dVector.h"
+
+class matrix
+
+{
+private:
+	
+	dvector **m;
+	int nRows; 
+	int nCols;
+	int emptyRow = 0;       //matrix index that correspondsd to the first empty row where to append a vector
+	int checkInverse = 0;	//if matrix has just been inverted, this gets set to 1
+	double determinant;
+
+public:
+	//constructor
+	matrix(int R, int C) : nRows(R), nCols(C)
+	{
+		m = new dvector*[nRows];
+		for (int i = 0; i < nRows; i++)
+		{
+			m[i] = new dvector(nCols);
+
+			//cout << nCols << endl;
+		}
+	}
+	matrix(istream &stream);
+	matrix(const matrix&);							//copy constructor
+	~matrix();										//destructor
+	matrix &operator = (const matrix &other);		//copy assignment operator
+	matrix &operator +(const matrix &other);		//addition operator
+	void appendVector(const dvector&);				 //function to append vectors to matrixes
+	void output();	//output matrix
+	double det();								//function to get determinant of a matrix
+	bool isSquare();							//check if matrix is sqare and therefore invertible
+	
+	
+
+	friend matrix *transpose(matrix &other);		//take the take the transposition of another matrix
+	friend matrix *inverse(matrix &other);
+	
+
+	
+
+ 
+
+};
+
