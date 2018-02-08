@@ -50,8 +50,6 @@ matrix::matrix(istream & stream)
 	}
 }
 
-
-
 matrix::~matrix()
 {
 	for (int i = 0; i < nRows; i++)
@@ -60,6 +58,81 @@ matrix::~matrix()
 	}
 	delete []m;
 }
+
+matrix matrix::identity()											//CREATE IDENTITY MATRIX CORRESPONDING TO MATRICES DIMENSIONS
+{																	//this ones probably not too useful
+	if (nRows != nCols)
+	{
+		cout << "*C1: choose matrix of square dimensions" << endl;
+		exit(0);
+	}
+	matrix I(nRows, nCols);
+	
+	for (int i = 0; i < nRows; i++)
+	{
+		for (int j = 0; j < nCols; j++)
+		{
+			if (i == j)
+			{
+				(*(I.m[i]))[j] = 1;
+			}
+			else
+			{
+				(*(I.m[i]))[j] = 0;
+			}
+		}
+	}
+	return I;
+}
+
+matrix matrix::identity(int R)											//CREATE IDENTITY MATRIX CORRESPONDING TO certain dimension
+{
+	matrix I(R,R);
+
+	for (int i = 0; i < R; i++)
+	{
+		for (int j = 0; j < R; j++)
+		{
+			if (i == j)
+			{
+				(*(I.m[i]))[j] = 1;
+			}
+			else
+			{
+				(*(I.m[i]))[j] = 0;
+			}
+		}
+	}
+	return I;
+}
+
+matrix matrix::RREFmatrix()											//create a matrix that adjoins original matrix with identity
+{																	//in order to start row reduction
+	if (nRows != nCols)
+	{
+		cout << "(*ERROR in RREFMATRIX fxn*Invalid.  Matrix must have same # of rows as columns" << endl;
+		exit(0);
+	}
+	matrix I = identity(nRows);
+	matrix startRREF(nRows, nRows * 2);
+	for (int i = 0; i < startRREF.nRows; ++i)
+	{
+		for (int j = 0; j < startRREF.nCols; ++j)
+		{
+			if (j < nRows)
+			{
+				(*(startRREF.m[i]))[j] = (*m[i])[j];				//sketchy part, am i referencing actual value or address?
+			}
+			else
+			{
+				(*(startRREF.m[i]))[j] = (*(I.m[i]))[j-nRows];
+			}
+		}
+	}
+	return startRREF;
+}
+
+
 //transpose matrix
 matrix *transpose(matrix &other)
 {
@@ -253,5 +326,25 @@ void dvector::output()
 		cout << v[i] << " ";
 	}
 	cout << endl;
+}
+
+
+
+
+
+int main()
+{
+	
+
+	matrix A(cin);
+	A.output();
+	
+	matrix ARREF = A.RREFmatrix();
+	ARREF.output();
+	
+	
+	
+	
+	 return 0;
 }
 
