@@ -1,0 +1,18 @@
+void matrix::reduceUpperDiag(int R)					//after getting diagonal of 1's, call this function to reduce top entries starting with Row indice R
+{
+	//int rowReduceIndex = R;
+	rowPosition = R;
+	pivotPosition = R+1;
+	int rowIndex = rowPosition+1;
+	for (int i = pivotPosition; i< nRows; ++i)
+	{
+		double leadingCoeff = (*m[rowPosition])[i];
+		for (int j = i; j < nRows; ++j)
+		{
+			(*m[rowPosition])[j] = (*m[rowPosition])[j] + ((-1 * leadingCoeff)*(*m[rowIndex])[j]);  //Is this right? the goal is to turn all the nonzero entries to the right of each one into 0
+		}
+
+	}
+	
+	
+}
