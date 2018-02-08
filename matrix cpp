@@ -255,3 +255,27 @@ void dvector::output()
 	cout << endl;
 }
 
+int main()
+{
+	
+
+	matrix A(cin);
+	A.output();
+	if (!A.isSquare())
+		cout << "matrix is not square " << endl;
+	else
+		cout << "matrix is square" << endl;
+
+	
+	
+	matrix *C = inverse(A);
+	//C->output();
+	
+	
+	
+	 return 0;
+}
+
+
+
+
