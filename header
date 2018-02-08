@@ -14,31 +14,42 @@ private:
 	double determinant;
 
 public:
-	//constructor
-	matrix(int R, int C) : nRows(R), nCols(C)
+
+	matrix(int R, int C) : nRows(R), nCols(C)		//main constructor	
 	{
 		m = new dvector*[nRows];
 		for (int i = 0; i < nRows; i++)
 		{
 			m[i] = new dvector(nCols);
-
-			//cout << nCols << endl;
 		}
 	}
-	matrix(istream &stream);
+	matrix(istream &stream);						//user input matrix values
 	matrix(const matrix&);							//copy constructor
 	~matrix();										//destructor
+	
 	matrix &operator = (const matrix &other);		//copy assignment operator
 	matrix &operator +(const matrix &other);		//addition operator
-	void appendVector(const dvector&);				 //function to append vectors to matrixes
-	void output();	//output matrix
-	double det();								//function to get determinant of a matrix
-	bool isSquare();							//check if matrix is sqare and therefore invertible
+	
+	
+	void output();									//output matrix
+	double det();									//function to get determinant of a matrix		!!NEEDS POLISHING!!
+	bool isSquare();								//check if matrix is sqare and therefore invertible !!GLITCHY!!
 	
 	
 
 	friend matrix *transpose(matrix &other);		//take the take the transposition of another matrix
-	friend matrix *inverse(matrix &other);
+	friend matrix *inverse(matrix &other);			//take the inverse of a matrix !!RIGHT NOW ONLY WORKS FOR 2x2, NEEDS POLISHING!!!
+
+	//THESE FUNCTIONS ARE FOCUSED ON MY CURRENT GOAL OF INVERTING MATRICES BY RREF TECHNIQUE:
+
+	matrix identity();							//create an identity matrix of corresponding size
+	matrix identity(int);
+	matrix RREFmatrix();						//adjoin matrix to be inverted with its identity matrix
+
+	
+
+	//SEMI USELESS FUNCTIONS:
+	void appendVector(const dvector&);				 //function to append vectors to matrixes
 	
 
 	
@@ -46,4 +57,3 @@ public:
  
 
 };
-
