@@ -1,1 +1,257 @@
+#include "stdafx.h"
+#include "Matrix.h"
+#include <fstream>
+
+using namespace std;
+
+//copy constructor def
+matrix::matrix(const matrix &other)
+{
+	nRows = other.nRows;
+	nCols = other.nCols;
+	m = new dvector*[nRows];
+	for (int i = 0; i < nRows; i++)
+	{
+		m[i] = new dvector(nCols);
+		*m[i] = *other.m[i];          //should i add a pointer or not?
+	}
+
+}
+//assignment constructor operator
+matrix &matrix::operator=(const matrix& other)
+{
+	if (this == &other)
+	{
+		return *this;
+	}
+	nRows = other.nRows;
+	nCols = other.nCols;
+	delete[] m;
+	m = new dvector*[nRows];
+	for (int i = 0; i < nRows; i++)
+	{
+		m[i] = new dvector(nCols);
+	}
+	return *this;
+}
+
+//user input matrix
+matrix::matrix(istream & stream)
+{
+	stream >> nRows >> nCols;
+	m = new dvector*[nRows];
+	for (int i = 0; i < nRows; i++)
+	{
+		m[i] = new dvector(nCols);
+		for (int j = 0; j < nCols; j++)
+		{
+			stream >> (*(m[i]))[j];
+		}
+	}
+}
+
+
+
+matrix::~matrix()
+{
+	for (int i = 0; i < nRows; i++)
+	{
+		delete m[i];
+	}
+	delete []m;
+}
+//transpose matrix
+matrix *transpose(matrix &other)
+{
+	matrix *a = new matrix(other.nCols, other.nRows);
+
+	for (int i = 0; i < a->nRows; i++)
+	{
+		for (int j = 0; j < a->nCols; j++)
+		{
+			/*
+			dvector *x = a->m[i];
+			dvector & y = *x;
+			dvector *ox = other.m[j];
+			dvector & oy = *ox;
+			y[j] = oy[i];
+			*/
+
+			(*(a->m[i]))[j] = (*(other.m[j]))[i];
+			//(a->m[i])[j] = (other.m[j])[i];
+		}
+	}
+	return a;
+}
+
+matrix *inverse(matrix &other)					//INVERSE OF 2x2 MATRIX FOR NOW
+{
+	matrix *k = new matrix(other.nRows, other.nCols);
+	double DC = other.det();
+	if ( !other.isSquare() )
+	{
+		cout << "Invalid. MAtrix must be square" << endl;
+		exit(0);
+	}
+	if (DC == 0)
+	{
+		cout << "Invalid.  matrix must have a nonzero determinant" << endl;
+		exit(0);
+	}
+	
+	(*(k->m[0]))[0] = (*(other.m[1]))[1];
+	(*(k->m[1]))[1] = (*(other.m[0]))[0];
+	(*(k->m[1]))[0] = -1 * (*(other.m[1]))[0];
+	(*(k->m[0]))[1] = -1 * (*(other.m[0]))[1];
+	
+
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			(*(k->m[i]))[j] = (*(k->m[i]))[j] * (1 /DC); ///8****AF!!!!
+		}
+	}
+	 (k->checkInverse) = 1;
+	return k;
+}
+matrix &matrix::operator+(const matrix& other)
+{
+	if (other.nCols != nCols || other.nRows != nRows)
+	{
+		cout << "invalid. matrixes must be the same size to add" << endl;
+		exit(0);
+	}
+	for (int i = 0; i < nRows; i++)
+	{
+		*m[i] = *m[i] + *other.m[i];
+	}
+	return *this;
+}
+void matrix::output()
+{
+	if (checkInverse == 0)
+		cout << "Here is your matrix: " << endl;
+	else
+		cout << "Here is the inverted matrix: " << endl;
+	for (int i = 0; i < nRows; i++)
+	{
+		cout << *m[i] << endl;
+	}
+}
+void matrix::appendVector(const dvector& other) //???syntax, const, reference??
+{
+	*m[emptyRow] = other;
+	emptyRow = emptyRow + 1;
+}
+double matrix::det()				//calculate just 2x2 determinants for now!!
+{
+	double D;
+	if (nCols = 2 && nCols == nRows)
+	{
+		D = ((*m[0])[0] * (*m[1])[1]) - ((*m[0])[1] * (*m[1])[0]);
+	}
+	determinant = D;
+	return D;
+	
+}
+bool matrix::isSquare()									//function to see if matrix is square, not working for some reason!!
+{
+	if (nRows != nCols)
+	{
+		return false;
+	}
+	return true;
+}
+
+
+
+
+
+
+
+
+
+//DVECTOR FUNCTION DEFINITIONS
+dvector::dvector(const dvector& other) {
+	
+	size = other.size;
+	v = new double[other.size];
+	for (int i = 0; i < other.size; i++)
+	{
+		v[i] = other.v[i];
+	}
+}
+
+dvector &dvector::operator=(const dvector& other) {
+	
+	if (this == &other)
+	{
+		return *this;
+	}
+
+	size = other.size;
+	delete[] v;
+	v = new double[size];
+	for (int i = 0; i < size; i++)
+	{
+		v[i] = other.v[i];
+	}
+
+	return *this;
+}
+//
+void dvector::make()
+{
+	cout << " enter the entries of your vector one by one" << endl;
+	for (int i = 0; i < size; i++)
+	{
+		int entry;
+		cin >> entry;
+		v[i] = entry;
+	}
+
+}
+//
+dvector &dvector::operator+(const dvector& other) {
+
+	for (int i = 0; i < other.size; i++)
+	{
+		v[i] = v[i] + other.v[i];
+	}
+	return *this;
+}
+double &dvector::operator[](int i) {
+	if (i >= size)
+	{
+		cout << "invalid index" << endl;
+		exit(0);
+	}
+	return *(v + i);
+}
+dvector &dvector::operator*(const dvector& other) {
+
+	if (size != other.size)
+	{
+		cout << "size of the two vectors is not the same, cannot multiplicate" << endl;
+		exit(0);
+	}
+	for (int i = 0; i < size; i++)
+	{
+		v[i] = v[i] * other.v[i];
+	}
+	return *this;
+}
+
+
+
+void dvector::output() 
+{
+ 
+	for (int i = 0; i < size; i++)
+	{
+		cout << v[i] << " ";
+	}
+	cout << endl;
+}
 
