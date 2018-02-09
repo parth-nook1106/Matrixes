@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Matrix.h"
 #include <fstream>
+#include <cmath>
 
 using namespace std;
 
@@ -106,8 +107,10 @@ matrix matrix::identity(int R)											//CREATE IDENTITY MATRIX CORRESPONDING 
 	return I;
 }
 
-matrix matrix::RREFmatrix()											//create a matrix that adjoins original matrix with identity
-{																	//in order to start row reduction
+matrix matrix::REFmatrix(int rows, int cols)											//create a matrix that adjoins original matrix with identity
+{
+	rows = nRows;
+	cols = nCols;
 	if (nRows != nCols)
 	{
 		cout << "(*ERROR in RREFMATRIX fxn*Invalid.  Matrix must have same # of rows as columns" << endl;
@@ -132,6 +135,140 @@ matrix matrix::RREFmatrix()											//create a matrix that adjoins original ma
 	return startRREF;
 }
 
+bool matrix::checkRowCoeff(int R)									//smaller checkRowcoeff function, bigger 1 might be useful, right under
+{
+	rowPosition = R;
+	if (rowPosition >= nRows)
+	{
+		return true;
+	}
+	pivotPosition = rowPosition;
+	for (int i = rowPosition+1; i < nRows; i++)
+	{
+		if ((  (*m[i])[pivotPosition] == 0 && (*m[rowPosition])[pivotPosition] == 1))
+		{
+			pivotPosition = pivotPosition + 1;
+			return true;
+		}
+	}
+	return false;
+}
+void matrix::rowXreciprocal(int R)
+{
+	double leadingCoeff = (*m[R])[pivotPosition];
+
+	if (leadingCoeff == 0)											//this part swaps rows if top row has nonzero leading coefficient
+	{
+		for (int i = R + 1; i < nRows; i++)							//turn this into its own function later!!
+		{
+			if ((*m[i])[pivotPosition] != 0)
+			{
+				swapRows(nCols, R, i);
+				leadingCoeff = (*m[R])[pivotPosition];
+			}
+			break;
+		}
+	}
+	for (int j = pivotPosition; j < nCols; j++)
+	{
+		(*m[R])[j] = (*m[R])[j] * (1 / leadingCoeff);
+		(*m[R])[j] = sqrt(pow((*m[R])[j], 2));   
+	}
+	
+}
+void matrix::reduceLowerDiag(int R)
+{
+	pivotPosition = R;
+	for (int i = (R + 1); i < nRows; ++i)
+	{
+		double leadingCoeff = (*m[i])[pivotPosition];
+		
+		for (int j = pivotPosition; j < nCols; ++j)
+		{
+			(*m[i])[j] = (*m[i])[j] + ((-1)*leadingCoeff * (*m[R])[j]);    //CHECK, this is complex.  
+		}
+	}
+}
+void matrix::reduceUpperDiag(int R)					//after getting diagonal of 1's, call this function to reduce top entries starting with Row indice R
+{
+	rowPosition = R;
+	pivotPosition = rowPosition + 1;
+	int count = 0;
+
+
+	
+	while (pivotPosition < nRows)
+	{
+		double leadingCoeff = (*m[rowPosition])[pivotPosition];
+		for (int i = pivotPosition; i < nCols; ++i)
+		{
+			(*m[rowPosition])[i] = (*m[rowPosition])[i] + (-1 * leadingCoeff)*((*m[pivotPosition])[i]);
+		}
+		pivotPosition = pivotPosition + 1;
+	}
+	
+	
+}
+
+
+/*bool matrix::checkRowCoeff(int R)
+{
+	rowPosition = R;
+	
+	for (int i = rowPosition; i < nRows; ++i)							//iterates thru rows, starting with the next row that
+	{																	//that needs its leading coefficient to turn to 1	
+		if ((*m[i])[pivotPosition] != 0)
+		{		
+			if (i != rowPosition) { swapRows(nCols, rowPosition, i); }	//in case row had a leading coefficient of 0, hte first row with
+																		//nonzero leading coeffficient is swapped with the first row
+			double leadingCoeff = (*m[rowPosition])[pivotPosition];				
+			for (int j = pivotPosition; j < nCols; ++j)					//then each member of that row is multiplied by the reciprocal
+			{															//of the leading coeffficient
+				(*m[rowPosition])[j] = ((*m[rowPosition])[j]) * (1 / leadingCoeff);			//<-----(HERE) ^^
+				(*m[rowPosition])[j] = sqrt(pow((*m[rowPosition])[j], 2));				//ensure it is positive
+			}
+				
+		}																
+		break;													//Since we now have reduced the most recent row, we break out of loop for next step
+	}
+		
+	for (int i = rowPosition + 1; i < nRows; ++i)
+	{
+		if ((*m[i])[pivotPosition] != 0)					//Program goes through all rows after the last one to be reduced
+		{
+			double factor;									
+			factor = (-1) * ((*m[i])[pivotPosition]);		//The factor is hte number that you multiply the recently-reduced row	
+			for (int j = pivotPosition; j < nCols; ++j)		//with to add each entry to the new row
+			{
+				(*m[i])[j] = (*m[i])[j] + ((*m[rowPosition])[j] * factor);		//after this, all entries in the pivotposition column 
+			}																	//below the 1 should be 0		
+		}
+	}
+	for (int i = rowPosition + 1; i < nRows; ++i)					
+	{
+		while ((*m[i])[0] != 0)							//itertes through all rows again, if any entries in 
+		{															//pivotpositionTH column aren't 0, it returns false
+			return false;
+		}
+
+		rowPosition = rowPosition + 1; 
+		pivotPosition = pivotPosition + 1;							//if they're all 0, the matrix object's associated rowposition
+		return true;												//and pivotposition are increased so when checkRow is called again
+	}																//it starts at the next part of hte matrix
+
+
+}*/            
+
+
+
+void matrix::swapRows(int Cols, int X1, int X2)					//cols is vector size, X1 and X2 are row indices to be swapped
+{
+	dvector temp(Cols);
+	temp = *m[X1];
+	*m[X1] = *m[X2];
+	*m[X2] = temp;
+}
+
 
 //transpose matrix
 matrix *transpose(matrix &other)
@@ -142,51 +279,40 @@ matrix *transpose(matrix &other)
 	{
 		for (int j = 0; j < a->nCols; j++)
 		{
-			/*
-			dvector *x = a->m[i];
-			dvector & y = *x;
-			dvector *ox = other.m[j];
-			dvector & oy = *ox;
-			y[j] = oy[i];
-			*/
-
 			(*(a->m[i]))[j] = (*(other.m[j]))[i];
-			//(a->m[i])[j] = (other.m[j])[i];
+			
 		}
 	}
 	return a;
 }
 
-matrix *inverse(matrix &other)					//INVERSE OF 2x2 MATRIX FOR NOW
+void matrix::inverse()				
 {
-	matrix *k = new matrix(other.nRows, other.nCols);
-	double DC = other.det();
-	if ( !other.isSquare() )
-	{
-		cout << "Invalid. MAtrix must be square" << endl;
-		exit(0);
-	}
-	if (DC == 0)
-	{
-		cout << "Invalid.  matrix must have a nonzero determinant" << endl;
-		exit(0);
-	}
+	matrix New = REFmatrix(nRows, nCols);
 	
-	(*(k->m[0]))[0] = (*(other.m[1]))[1];
-	(*(k->m[1]))[1] = (*(other.m[0]))[0];
-	(*(k->m[1]))[0] = -1 * (*(other.m[1]))[0];
-	(*(k->m[0]))[1] = -1 * (*(other.m[0]))[1];
+	int row = 0;
+	while (!New.checkRowCoeff(row))
+	{
+		New.rowXreciprocal(row);
+		New.reduceLowerDiag(row);
+		row = row + 1;
+	}
+	row = 0;
 	
+	while (row < nRows)
+	{
+		New.reduceUpperDiag(row);
+		row = row + 1;
+	}
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < New.nRows; i++)
 	{
-		for (int j = 0; j < 2; j++)
+		
+		for (int j = 0; j < New.nRows; j++)
 		{
-			(*(k->m[i]))[j] = (*(k->m[i]))[j] * (1 /DC); ///8****AF!!!!
+			(*(m[i]))[j] = ((*New.m[i]))[j + New.nRows];
 		}
 	}
-	 (k->checkInverse) = 1;
-	return k;
 }
 matrix &matrix::operator+(const matrix& other)
 {
@@ -334,17 +460,22 @@ void dvector::output()
 
 int main()
 {
-	
+
 
 	matrix A(cin);
 	A.output();
+
+	A.inverse();
+	cout << "got past invers function" << endl;
+	A.output();
+
+
 	
-	matrix ARREF = A.RREFmatrix();
-	ARREF.output();
+	
+		
 	
 	
-	
-	
-	 return 0;
+	return 0;
 }
+
 
